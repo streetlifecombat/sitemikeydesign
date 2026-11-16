@@ -107,6 +107,7 @@ button.btn{border:0;font:inherit;font-weight:700;cursor:pointer}
 footer{padding:30px 0;text-align:center;color:var(--mute)}
 @media(max-width:820px){.crt{grid-template-columns:repeat(2,1fr)}.adm .row{grid-template-columns:1fr}.hero .wrap,.about,.contact{grid-template-columns:1fr}.grid,.svc{grid-template-columns:1fr}.stack{height:280px}nav ul{gap:14px;font-size:15px}.contact{padding:26px}.me{margin:auto}}
 @media(prefers-reduced-motion:reduce){.card,.cr{opacity:1!important;animation:none!important}.pic:after,.cr .av,.wave{animation:none}.fly,.fly svg,.leg,.pom,.nose{animation:none}.fly{left:auto;right:4%}.lights i{animation:none}.btn{transition:none}html{scroll-behavior:auto}}
+.chat{border:1px solid var(--line);border-radius:16px;overflow:hidden;max-width:640px;background:var(--bg)}.msgs{height:380px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}.m{max-width:80%;padding:10px 14px;border-radius:16px;white-space:pre-wrap;word-break:break-word}.m.k{align-self:flex-end;background:var(--blue);color:#fff;border-bottom-right-radius:4px}.m.o{align-self:flex-start;background:var(--bg2);border:1px solid var(--line);border-bottom-left-radius:4px}.m small{display:block;opacity:.7;font-size:12px;margin-top:2px}.chat form{display:flex;gap:8px;padding:10px;max-width:none;border-top:1px solid var(--line);background:var(--bg2)}.chat textarea{resize:none;border-color:var(--line)}.chat .btn{padding:0 22px}
 </style>
 </head>
 <body>
@@ -180,10 +181,10 @@ footer{padding:30px 0;text-align:center;color:var(--mute)}
 <details><summary>Wat heb je van mij nodig?</summary><p>Je onderwerp, titel en eventuele foto’s of beeldmateriaal.</p></details>
 </div></section>
 
-<section id="bestel"><div class="wrap"><div class="ord"><h2>Bestel je thumbnail</h2><p class="sub">Log in met Discord. Je bestelling komt direct bij mij binnen en ik reageer via Discord.</p>
+<section id="bestel"><div class="wrap"><div class="ord"><h2>Bestel je thumbnail</h2><p class="sub">Log in met Discord en chat direct met mij over je thumbnail. Alles gebeurt hier op de site.</p>
 <div id="o-out"><a class="btn dc" href="/api/login">Inloggen met Discord</a></div>
-<div id="o-in" hidden><div class="who"><img id="o-av" alt=""><span>Ingelogd als <b id="o-nm"></b></span><a href="/api/logout" style="color:var(--red)">Uitloggen</a></div>
-<form id="of"><input name="kanaal" placeholder="Kanaalnaam" required aria-label="Kanaalnaam"><input name="onderwerp" placeholder="Onderwerp of titel van de video" required aria-label="Onderwerp"><select name="aantal" required aria-label="Aantal thumbnails"><option value="" disabled selected>Hoeveel thumbnails?</option><option>1</option><option>2\u20135</option><option>6\u201310</option><option>10+</option></select><label>Deadline (optioneel)<input name="deadline" type="date"></label><textarea name="bericht" rows="4" placeholder="Ideeën, referenties of links" aria-label="Bericht"></textarea><button class="btn" type="submit">Bestelling versturen</button></form><p id="o-st" role="status"></p></div></div></div></section>
+<div id="o-in" hidden><div class="who"><img id="o-av" alt=""><span>Ingelogd als <b id="o-nm"></b></span><a id="o-ad" href="/admin.html" hidden>Mijn chats</a><a href="/api/logout" style="color:var(--red)">Uitloggen</a></div>
+<div class="chat"><div class="msgs" id="msgs" aria-live="polite"></div><form id="cf2"><textarea id="ct" rows="2" maxlength="2000" placeholder="Typ je bericht…" aria-label="Bericht"></textarea><button class="btn" type="submit">Versturen</button></form></div><p id="o-st" role="status"></p></div></div></div></section>
 
 <section id="contact"><div class="wrap"><div class="contact">
 <div>
@@ -255,9 +256,15 @@ f.forEach(function(p){p.y+=p.s;p.o+=.015;p.x+=Math.sin(p.o)*.5;if(p.y>h){p.y=-5;
 if(p.r>2.9){x.font=(p.r*5)+'px sans-serif';x.fillText('❄',p.x,p.y)}else{x.beginPath();x.arc(p.x,p.y,p.r,0,7);x.fill()}});requestAnimationFrame(t)})();
 })();
 </script><script>
-(async function(){var o=document.getElementById('o-out'),i=document.getElementById('o-in'),st=document.getElementById('o-st');
-try{var r=await (await fetch('/api/me')).json();if(r.user){o.hidden=true;i.hidden=false;document.getElementById('o-av').src=r.user.avatar;document.getElementById('o-nm').textContent=r.user.name}}catch(e){}
-document.getElementById('of').addEventListener('submit',async function(e){e.preventDefault();st.textContent='Versturen\u2026';
-try{var x=await fetch('/api/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(e.target)))}),j=await x.json();
-if(x.ok){st.textContent='Bedankt! Je bestelling is binnen. Ik neem contact op via Discord.';e.target.reset()}else st.textContent=j.error||'Er ging iets mis.'}catch(err){st.textContent='Er ging iets mis. Probeer het later opnieuw.'}})})();
+(function(){var o=document.getElementById('o-out'),i=document.getElementById('o-in'),st=document.getElementById('o-st'),M=document.getElementById('msgs'),last='';
+function tm(t){return new Date(t).toLocaleString('nl-NL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}
+function bub(t,c,ts){var d=document.createElement('div');d.className='m '+c;d.textContent=t;if(ts){var s=document.createElement('small');s.textContent=tm(ts);d.appendChild(s)}M.appendChild(d)}
+async function load(){try{var r=await fetch('/api/chat');if(!r.ok){st.textContent=(await r.json()).error||'';return}var j=await r.json(),s=JSON.stringify(j.messages);if(s===last)return;last=s;st.textContent='';M.textContent='';
+bub('Hoi! Vertel kort voor welk kanaal en welke video je een thumbnail wilt, en of je al ideeën of voorbeelden hebt. Ik reageer zo snel mogelijk.','o');
+j.messages.forEach(function(m){bub(m.text,m.from,m.ts)});M.scrollTop=M.scrollHeight}catch(e){}}
+(async function(){try{var r=await(await fetch('/api/me')).json();if(r.user){o.hidden=true;i.hidden=false;document.getElementById('o-av').src=r.user.avatar;document.getElementById('o-nm').textContent=r.user.name;if(r.isOwner)document.getElementById('o-ad').hidden=false;load();setInterval(function(){if(!document.hidden)load()},4000)}}catch(e){}})();
+document.getElementById('cf2').addEventListener('submit',async function(e){e.preventDefault();var t=document.getElementById('ct'),v=t.value.trim();if(!v)return;t.value='';
+try{var x=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:v})});if(!x.ok){st.textContent=(await x.json()).error||'Versturen mislukt.';t.value=v;return}last='';load()}catch(err){st.textContent='Versturen mislukt. Probeer het opnieuw.';t.value=v}});
+document.getElementById('ct').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();document.getElementById('cf2').requestSubmit()}});
+})();
 </script></body></html>

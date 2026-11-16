@@ -1,0 +1,26 @@
+<!DOCTYPE html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Chats – Mickey Design</title>
+<style>:root{--bg:#EEF5FF;--bg2:#fff;--ink:#0A2250;--mute:#4A5F8A;--blue:#1F5FD6;--line:#CFE0FA;color-scheme:light}@media(prefers-color-scheme:dark){:root{--bg:#071636;--bg2:#0D2150;--ink:#EAF2FF;--mute:#9DB4E0;--line:#1D3A7A;color-scheme:dark}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,sans-serif;height:100vh;display:flex;flex-direction:column}
+header{background:#0A2250;color:#fff;padding:12px 18px;display:flex;justify-content:space-between;align-items:center}header a{color:#fff}
+main{flex:1;display:grid;grid-template-columns:300px 1fr;min-height:0}
+#list{border-right:1px solid var(--line);overflow-y:auto;background:var(--bg2)}
+.c{display:flex;gap:10px;padding:12px;border-bottom:1px solid var(--line);cursor:pointer;align-items:center;width:100%;background:none;border-left:0;border-right:0;border-top:0;color:inherit;font:inherit;text-align:left}.c.on{background:var(--bg)}.c img{width:40px;height:40px;border-radius:50%}.c b{display:block}.c span{color:var(--mute);font-size:14px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px}.c.new b:after{content:" ●";color:#E23B4E}
+#pane{display:flex;flex-direction:column;min-height:0}#msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.m{max-width:75%;padding:10px 14px;border-radius:16px;white-space:pre-wrap;word-break:break-word}.m.o{align-self:flex-end;background:var(--blue);color:#fff}.m.k{align-self:flex-start;background:var(--bg2);border:1px solid var(--line)}.m small{display:block;opacity:.7;font-size:12px}
+form{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line);background:var(--bg2)}textarea{flex:1;resize:none;padding:10px;border-radius:10px;border:2px solid var(--line);font:inherit;background:var(--bg);color:var(--ink)}
+button.s{background:#E23B4E;color:#fff;border:0;border-radius:99px;padding:0 22px;font:inherit;font-weight:700;cursor:pointer}p.e{padding:30px;text-align:center;color:var(--mute)}
+@media(max-width:720px){main{grid-template-columns:1fr;grid-template-rows:200px 1fr}}</style></head><body>
+<header><b>Mickey Design · Chats</b><a href="/">Naar de site</a></header>
+<main id="mn" hidden><div id="list"></div><div id="pane"><div id="msgs"><p class="e">Kies links een gesprek.</p></div><form id="f" hidden><textarea id="t" rows="2" maxlength="2000" placeholder="Antwoord…" aria-label="Antwoord"></textarea><button class="s" type="submit">Versturen</button></form></div></main>
+<p class="e" id="no" hidden>Je hebt hier geen toegang. <a href="/api/login">Inloggen met Discord</a></p>
+<script>
+var cur=null,lastL='',lastM='';
+function tm(t){return new Date(t).toLocaleString('nl-NL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}
+async function list(){var r=await fetch('/api/admin');if(!r.ok)return;var j=await r.json(),s=JSON.stringify(j);if(s===lastL)return;lastL=s;var L=document.getElementById('list');L.textContent='';
+if(!j.chats.length){var p=document.createElement('p');p.className='e';p.textContent='Nog geen gesprekken.';L.appendChild(p)}
+j.chats.forEach(function(c){var b=document.createElement('button');b.className='c'+(c.id===cur?' on':'')+(c.from==='k'?' new':'');var im=document.createElement('img');im.src=c.avatar||'';im.alt='';var d=document.createElement('div'),n=document.createElement('b'),l=document.createElement('span');n.textContent=c.name;l.textContent=(c.from==='o'?'Jij: ':'')+c.last;d.append(n,l);b.append(im,d);b.onclick=function(){cur=c.id;lastM='';lastL='';msgs();list()};L.appendChild(b)})}
+async function msgs(){if(!cur)return;var r=await fetch('/api/admin?user='+cur);if(!r.ok)return;var j=await r.json(),s=JSON.stringify(j);if(s===lastM)return;lastM=s;var M=document.getElementById('msgs');M.textContent='';document.getElementById('f').hidden=false;
+j.messages.forEach(function(m){var d=document.createElement('div');d.className='m '+m.from;d.textContent=m.text;var t=document.createElement('small');t.textContent=tm(m.ts);d.appendChild(t);M.appendChild(d)});M.scrollTop=M.scrollHeight}
+document.getElementById('f').onsubmit=async function(e){e.preventDefault();var t=document.getElementById('t'),v=t.value.trim();if(!v||!cur)return;t.value='';await fetch('/api/admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user:cur,text:v})});lastM='';lastL='';msgs();list()};
+(async function(){try{var r=await(await fetch('/api/me')).json();if(r.isOwner){document.getElementById('mn').hidden=false;list();setInterval(function(){if(!document.hidden){list();msgs()}},4000);return}}catch(e){}document.getElementById('no').hidden=false})();
+</script></body></html>
