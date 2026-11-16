@@ -13,11 +13,11 @@ Klanten loggen in met Discord en chatten op de site met jou. Jij beantwoordt de 
 ## Discord
 1. discord.com/developers/applications > New Application. Kopieer bij OAuth2 de Client ID en de Client Secret.
 2. Voeg bij OAuth2 > Redirects toe: `https://JOUW-SITE.vercel.app/api/callback`.
-3. Zet in Discord Instellingen > Geavanceerd > Ontwikkelaarsmodus aan. Klik met rechts op jezelf en kies Gebruikers-ID kopiëren. Dat is `OWNER_DISCORD_ID`. Alleen dit account mag de chats beheren.
+3. Jouw Discord-ID (996516834956283945) staat al als eigenaar in de code. Alleen dit account mag de chats beheren. Wil je een ander account, zet dan `OWNER_DISCORD_ID` in Vercel.
 4. Optioneel: maak een webhook in een kanaal (Kanaalinstellingen > Integraties > Webhooks). Je krijgt dan een Discord-melding bij elk nieuw bericht. Dat is `DISCORD_WEBHOOK_URL`.
 
 ## Variabelen in Vercel (Settings > Environment Variables)
-DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, OWNER_DISCORD_ID, SESSION_SECRET (zelf verzonnen lange tekst), SITE_URL (zonder slash aan het einde) en eventueel DISCORD_WEBHOOK_URL. Deploy daarna opnieuw.
+DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, SESSION_SECRET (zelf verzonnen lange tekst), SITE_URL (zonder slash aan het einde) en eventueel DISCORD_WEBHOOK_URL. Deploy daarna opnieuw.
 
 ## Chats beantwoorden
 Ga naar `jouw-site.vercel.app/admin.html`, log in met Discord en kies links een gesprek. De pagina ververst zichzelf elke paar seconden.

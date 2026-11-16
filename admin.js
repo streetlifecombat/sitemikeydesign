@@ -1,7 +1,7 @@
-const{verify,cookies}=require('./_lib');const db=require('./_db');
+const{verify,cookies,OWNER}=require('./_lib');const db=require('./_db');
 const okId=v=>/^\d{5,25}$/.test(String(v));
 module.exports=async(req,res)=>{res.setHeader('Cache-Control','no-store');
-const s=verify(cookies(req).session);if(!s||!process.env.OWNER_DISCORD_ID||s.id!==process.env.OWNER_DISCORD_ID)return res.status(403).json({error:'Geen toegang.'});
+const s=verify(cookies(req).session);if(!s||s.id!==OWNER)return res.status(403).json({error:'Geen toegang.'});
 try{
 if(req.method==='POST'){const{user,text}=req.body||{};const t=String(text||'').trim().slice(0,2000);if(!okId(user)||!t)return res.status(400).json({error:'Ongeldig.'});
 const ts=Date.now();await db('RPUSH','chat:'+user,JSON.stringify({from:'o',text:t,ts}));await db('LTRIM','chat:'+user,-200,-1);
